@@ -20,24 +20,18 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: neilcar/node-test:${{ github.run_number }}
+        tags: neilcar/java-test:${{ github.run_number }}
     - id: scan
       uses: ./.github/actions/stackrox-scan
       with:
-        image: 'neilcar/node-test:${{ github.run_number }}'
+        image: 'neilcar/java-test:${{ github.run_number }}'
         central-endpoint: ${{ secrets.ROX_CENTRAL_ENDPOINT }}
         api-token: ${{ secrets.ROX_API_TOKEN }}
         format: 'pretty' 
     - id: check
       uses: ./.github/actions/stackrox-check
       with:
-        image: 'neilcar/node-test:${{ github.run_number }}'
+        image: 'neilcar/java-test:${{ github.run_number }}'
         central-endpoint: ${{ secrets.ROX_CENTRAL_ENDPOINT }}
         api-token: ${{ secrets.ROX_API_TOKEN }}
-    - id: deployment_check
-      if: ${{ always() }}
-      uses: ./.github/actions/stackrox-deployment-check
-      with:
-        yaml: './deploy.yml'
-        central-endpoint: ${{ secrets.ROX_CENTRAL_ENDPOINT }}
-        api-token: ${{ secrets.ROX_API_TOKEN }}
+
