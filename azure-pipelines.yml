@@ -1,0 +1,32 @@
+trigger:
+- master
+
+resources:
+- repo: self
+
+stages:
+- stage: Scan
+  jobs:
+  - job: Scan
+    displayName: Scan with StackRox
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        mkdir $(System.DefaultWorkingDirectory)/artifacts
+        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" https://$ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl
+        chmod +x ./roxctl
+        ./roxctl image scan -e $ROX_CENTRAL_ENDPOINT --image vulnerables/cve-2017-7494 --format pretty 
+      displayName: 'StackRox image scan'
+      env: 
+        ROX_API_TOKEN: $(roxapitoken)
+        ROX_CENTRAL_ENDPOINT: '$(roxcentralendpoint)'
+    - script: |
+        mkdir $(System.DefaultWorkingDirectory)/artifacts
+        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" https://$ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl
+        chmod +x ./roxctl
+        ./roxctl image check -e $ROX_CENTRAL_ENDPOINT --image vulnerables/cve-2017-7494 
+      displayName: 'StackRox image check'
+      env: 
+        ROX_API_TOKEN: $(roxapitoken)
+        ROX_CENTRAL_ENDPOINT: '$(roxcentralendpoint)'

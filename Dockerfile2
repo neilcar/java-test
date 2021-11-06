@@ -1,0 +1,29 @@
+# # use a node base image
+# FROM node:lts
+
+# # set maintainer
+# LABEL maintainer "neilcar@redhat.com"
+# LABEL build "1614372872"
+
+# # set a health check
+# HEALTHCHECK --interval=8s \
+#             --timeout=5s \
+#             CMD curl -f http://127.0.0.1:8000 || exit 1
+
+# RUN npm update --save -g -f
+# RUN npm uninstall y18n -g -D
+# RUN npm uninstall ini -g -D
+# RUN apt update && apt upgrade -y
+# RUN apt remove -y wget curl libcurl4-openssl-dev libcurl3 libcurl3-gnutls
+# RUN dpkg -r --force-all apt apt-get && dpkg -r --force-all debconf dpkg
+
+# # tell docker what port to expose
+# EXPOSE 8000
+
+
+# RUN dpkg -r --force-all apt apt-get && dpkg -r --force-all debconf dpkg
+
+FROM gitlab/gitlab-ce:14.0.0-ce.0
+ENV PLATFORM ubuntu_x86_64
+RUN /bin/sh -c if [ "$PLATFORM" = "ubuntu_x86" ] || [ "$PLATFORM" = "ubuntu_arm" ]; then       apt-get update       && apt-get -y install --no-install-recommends            systemd=237-3ubuntu10.50            dnsmasq=2.79-1ubuntu0.4            ;     else       apt-get update       && apt-get -y install --no-install-recommends            systemd=245.4-4ubuntu3.11            dnsmasq=2.80-1.1ubuntu1.4            openvpn=2.4.7-1ubuntu2.20.04.2            avahi-utils=0.7-4ubuntu7.1            ;     fi     && apt-get autoremove -y     && apt-get clean     && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*     && find / -name \"*.a\" -exec rm {} \\;     && rm -rf /usr/share/doc/ /usr/share/man/ /usr/share/locale/
+WORKDIR /home

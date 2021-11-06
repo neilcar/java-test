@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: neil-app
+  labels:
+    app: neil-app
+spec:
+  containers:
+  - name: neil-app
+    image: neilcar/docker-test:1
+    ports:
+    - containerPort: 8080
+    securityContext:
+      privileged: true

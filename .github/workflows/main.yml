@@ -1,0 +1,43 @@
+on: [push]
+
+jobs:
+  buildandscan:
+    runs-on: ubuntu-latest
+    name: Build & Scan Image
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1 
+      with:
+        username: neilcar
+        password: ${{ secrets.DOCKER_TOKEN }}
+    - name: Build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: neilcar/node-test:${{ github.run_number }}
+    - id: scan
+      uses: ./.github/actions/stackrox-scan
+      with:
+        image: 'neilcar/node-test:${{ github.run_number }}'
+        central-endpoint: ${{ secrets.ROX_CENTRAL_ENDPOINT }}
+        api-token: ${{ secrets.ROX_API_TOKEN }}
+        format: 'pretty' 
+    - id: check
+      uses: ./.github/actions/stackrox-check
+      with:
+        image: 'neilcar/node-test:${{ github.run_number }}'
+        central-endpoint: ${{ secrets.ROX_CENTRAL_ENDPOINT }}
+        api-token: ${{ secrets.ROX_API_TOKEN }}
+    - id: deployment_check
+      if: ${{ always() }}
+      uses: ./.github/actions/stackrox-deployment-check
+      with:
+        yaml: './deploy.yml'
+        central-endpoint: ${{ secrets.ROX_CENTRAL_ENDPOINT }}
+        api-token: ${{ secrets.ROX_API_TOKEN }}
